@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>無職転生 キャラクターアキネーター</title>
+<style>
+:root{color-scheme:light dark;--bg:#f6f7fb;--fg:#1d2030;--card:#fff;--ac:#3b6fd4;--bd:#d5d9e6}
+@media(prefers-color-scheme:dark){:root{--bg:#161823;--fg:#e8eaf3;--card:#222536;--ac:#7aa2ff;--bd:#3a3f57}}
+body{margin:0;font-family:system-ui,"Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--fg);display:flex;justify-content:center;padding:24px 12px}
+main{width:100%;max-width:560px;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:24px}
+h1{font-size:1.3rem;margin:0 0 16px}
+.q{font-size:1.25rem;min-height:4.5em;margin:16px 0}
+.btns{display:grid;gap:8px}
+button{font:inherit;padding:12px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--fg);cursor:pointer}
+button:hover{border-color:var(--ac)}
+button.primary{background:var(--ac);color:#fff;border-color:var(--ac)}
+.meta{font-size:.85rem;opacity:.7}
+.bar{height:6px;background:var(--bd);border-radius:3px;overflow:hidden;margin-top:8px}
+.bar>div{height:100%;background:var(--ac);transition:width .3s}
+.cand{font-size:.85rem;margin-top:16px;opacity:.8}
+</style>
+</head>
+<body>
+<main>
+<h1>無職転生 キャラクターアキネーター</h1>
+<div id="app">読み込み中…</div>
+</main>
+<script>
+const ANSWERS=[["はい",1],["たぶんそう",0.75],["わからない",null],["たぶん違う",0.25],["いいえ",0]];
+const EPS=0.05, CONFIDENT=0.8, MAX_Q=25;
+let elements=[], chars=[], st;
+
+const H=p=>(p<=0||p>=1)?0:-(p*Math.log2(p)+(1-p)*Math.log2(1-p));
+// 値が既知(value 0/1 かつ confidence 1)のときだけ返す。それ以外は null(不明扱い)
+const known=(c,id)=>c.v[id]??null;
+
+// 要素・キャラを読み込み、内部形式 c.v[要素ID]=1/0/null(不明) に変換する。
+// キャラは従来形式(elements)と簡易形式(has/unknown)の両対応。子要素を持てば親要素も自動で1にする。
+function normalize(e,c){
+  elements=e.categories.flatMap(cat=>cat.elements.map(el=>({...el,cat})));
+  const by=Object.fromEntries(elements.map(x=>[x.id,x]));
+  const anc=(id,o=new Set())=>{(by[id]?.parents||[]).forEach(p=>{if(!o.has(p)){o.add(p);anc(p,o)}});return o};
+  chars=c.characters.map(ch=>{
+    const m={};
+    if(ch.elements){elements.forEach(x=>m[x.id]=null);
+      for(const[k,v]of Object.entries(ch.elements))m[k]=(v.confidence===0||v.value<0)?null:v.value}
+    else{elements.forEach(x=>m[x.id]=0);(ch.unknown||[]).forEach(k=>m[k]=null);(ch.has||[]).forEach(k=>m[k]=1)}
+    Object.keys(m).filter(k=>m[k]===1&&by[k]).forEach(k=>anc(k).forEach(p=>m[p]=1));
+    return{...ch,v:m};
+  });
+}
+function init(){
+  st={w:chars.map(()=>1),asked:new Set(),n:0,rejected:new Set(),log:[]};
+  next();
+}
+function probs(){
+  const s=st.w.reduce((a,b)=>a+b,0)||1;
+  return st.w.map(x=>x/s);
+}
+function pickQuestion(){
+  const p=probs();let best=null,bs=0;
+  for(const el of elements){
+    if(st.asked.has(el.id))continue;
+    let y=0,n=0;
+    chars.forEach((c,i)=>{const v=known(c,el.id);if(v===1)y+=p[i];else if(v===0)n+=p[i]});
+    if(y+n===0)continue;
+    const score=H(y/(y+n))*(y+n);
+    if(score>bs+1e-9){bs=score;best=el}
+  }
+  return bs>0.01?best:null;
+}
+function next(){
+  const p=probs();
+  const order=p.map((x,i)=>i).filter(i=>!st.rejected.has(i)).sort((a,b)=>p[b]-p[a]);
+  const q=pickQuestion();
+  if(order.length===0)return renderFail();
+  if(p[order[0]]>=CONFIDENT||st.n>=MAX_Q||!q)return renderGuess(order,p);
+  renderQuestion(q,order,p);
+}
+function answer(el,a){
+  st.asked.add(el.id);st.n++;st.log.push([el.id,a]);
+  if(a!==null){
+    chars.forEach((c,i)=>{
+      const v=known(c,el.id);if(v===null)return;
+      st.w[i]*=EPS+(1-EPS)*(1-Math.abs(a-v));
+    });
+  }
+  next();
+}
+const $=h=>document.getElementById("app").innerHTML=h;
+function renderQuestion(q,order,p){
+  const text=(q.question||(q.cat.question_template||"{name}ですか?")).replaceAll("{name}",q.name);
+  $(`<div class="meta">質問 ${st.n+1}</div>
+  <div class="bar"><div style="width:${Math.min(100,st.n/MAX_Q*100)}%"></div></div>
+  <div class="q">${text}</div>
+  <div class="btns">${ANSWERS.map((a,i)=>`<button data-i="${i}">${a[0]}</button>`).join("")}</div>
+  <div class="cand">現在の候補: ${order.slice(0,3).map(i=>chars[i].name.split("・")[0]+" "+Math.round(p[i]*100)+"%").join(" / ")}</div>`);
+  document.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>answer(q,ANSWERS[b.dataset.i][1]));
+}
+function renderGuess(order,p){
+  const i=order[0];
+  $(`<div class="meta">${st.n}問で絞り込みました</div>
+  <div class="q">あなたが思い浮かべているのは<br><b>${chars[i].name}</b> ですか?</div>
+  <div class="btns"><button class="primary" id="ok">そのとおり!</button><button id="ng">違う</button></div>`);
+  document.getElementById("ok").onclick=()=>{$(`<div class="q">やった!もう一度遊びますか?</div><div class="btns"><button class="primary" id="re">もう一度</button></div>`);document.getElementById("re").onclick=init};
+  document.getElementById("ng").onclick=()=>{st.rejected.add(i);st.w[i]=0;
+    if(st.w.reduce((a,b)=>a+b,0)===0)return renderFail();
+    // 違った場合は次点を提示。質問が残っていれば続けて絞る
+    if(pickQuestion()&&st.n<MAX_Q){next()}else{const r=order.filter(x=>!st.rejected.has(x));r.length?renderGuess(r,probs()):renderFail()}};
+}
+function renderFail(){
+  $(`<div class="q">わかりませんでした…。まだ登録されていないキャラかもしれません。</div><div class="btns"><button class="primary" id="re">もう一度</button></div>`);
+  document.getElementById("re").onclick=init;
+}
+Promise.all([fetch("elements.json").then(r=>r.json()),fetch("characters.json").then(r=>r.json())])
+.then(([e,c])=>{normalize(e,c);init()})
+.catch(err=>$(`読み込みに失敗しました。ローカルで開く場合は <code>python -m http.server</code> を使ってください。<br>${err}`));
+</script>
+</body>
+</html>
