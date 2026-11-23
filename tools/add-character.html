@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>キャラクター・要素 登録ツール</title>
+<style>
+:root{color-scheme:light dark;--bg:#f6f7fb;--fg:#1d2030;--card:#fff;--ac:#3b6fd4;--bd:#d5d9e6}
+@media(prefers-color-scheme:dark){:root{--bg:#161823;--fg:#e8eaf3;--card:#222536;--ac:#7aa2ff;--bd:#3a3f57}}
+body{margin:0;font-family:system-ui,"Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--fg);display:flex;justify-content:center;padding:24px 12px}
+main{width:100%;max-width:600px;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:24px}
+h1{font-size:1.3rem;margin:0 0 16px}
+label{display:block;margin:14px 0 4px;font-size:.9rem;font-weight:600}
+input[type=text],input[type=file],select{width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--fg)}
+button{font:inherit;padding:12px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--fg);cursor:pointer}
+button:hover{border-color:var(--ac)}button:disabled{opacity:.4;cursor:default}
+button.primary,button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.row{display:flex;gap:8px;margin-top:16px}.row>button{flex:1}
+.hint{font-size:.85rem;opacity:.75;margin:4px 0}
+.status{font-size:.9rem;margin-top:12px;padding:8px 12px;border-radius:8px;border:1px solid var(--bd)}
+.q{font-size:1.25rem;min-height:3.5em;margin:12px 0;white-space:pre-line}
+.bar{height:6px;background:var(--bd);border-radius:3px;overflow:hidden}.bar>div{height:100%;background:var(--ac)}
+.chips span{display:inline-block;margin:2px;padding:2px 8px;border:1px solid var(--bd);border-radius:12px;font-size:.85rem}
+.chk{display:flex;gap:8px;align-items:center;margin:8px 0;font-size:.9rem}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+<h1>キャラクター・要素 登録ツール</h1>
+
+<section id="setup">
+  <div id="ghslot"></div>
+  <label>elements.json(必須)</label>
+  <input type="file" id="fe" accept=".json,application/json">
+  <label>characters.json(なければ空のまま)</label>
+  <input type="file" id="fc" accept=".json,application/json">
+  <div class="row"><button id="tabC" class="on">キャラを登録</button><button id="tabE">要素を追加</button></div>
+
+  <div id="panelC">
+    <label>キャラクターID</label>
+    <input type="text" id="cid" list="ids" placeholder="例: eris (英数字・_・-)" autocomplete="off">
+    <datalist id="ids"></datalist>
+    <label>名前</label>
+    <input type="text" id="cname" placeholder="例: エリス・ボレアス・グレイラット">
+    <label>別名(カンマ区切り)</label>
+    <input type="text" id="calias" placeholder="例: エリス, 狂犬">
+  </div>
+
+  <div id="panelE" class="hide">
+    <label>要素ID</label>
+    <input type="text" id="eid" list="eids" placeholder="例: has_sword_of_light (既存IDならその要素を設定)" autocomplete="off">
+    <datalist id="eids"></datalist>
+    <label>名前</label>
+    <input type="text" id="ename" placeholder="例: 光の太刀を持つ">
+    <label>カテゴリ</label>
+    <select id="ecat"></select>
+    <label>親要素ID(カンマ区切り・なければ空)</label>
+    <input type="text" id="eparents" placeholder="例: sword_user, is_combatant">
+    <label>質問文(空ならカテゴリのテンプレート)</label>
+    <input type="text" id="eq" placeholder="例: 光の太刀を使えますか?">
+  </div>
+
+  <div class="chk"><input type="checkbox" id="inferOn" checked><label for="inferOn" style="margin:0;font-weight:400">親子関係で質問を省略する(子要素が「はい」→親も「はい」、親が「いいえ」→子も「いいえ」)</label></div>
+  <div class="chk"><input type="checkbox" id="redo"><label for="redo" style="margin:0;font-weight:400">登録済みの値も含めて全部聞き直す</label></div>
+  <div class="status" id="status">elements.json を選んでください。</div>
+  <div class="row"><button class="primary" id="start" disabled>質問を始める</button></div>
+</section>
+
+<section id="ask" class="hide">
+  <div class="hint" id="who"></div>
+  <div class="bar"><div id="prog" style="width:0"></div></div>
+  <div class="hint" id="cnt"></div>
+  <div class="hint" id="catname"></div>
+  <div class="q" id="qtext"></div>
+  <div class="row"><button id="b1" class="primary">はい</button><button id="b0">いいえ</button><button id="bu">わからない</button></div>
+  <div class="row"><button id="back">← 戻る</button><button id="abort">中止</button></div>
+</section>
+
+<section id="done" class="hide">
+  <div class="status" id="summary"></div>
+  <div class="hint" id="chipsLabel"></div>
+  <div class="chips" id="chips"></div>
+  <div class="row"><button class="primary" id="dlC">characters.json をダウンロード</button><button id="cp">コピー</button></div>
+  <div class="row"><button class="primary" id="dlE">elements.json をダウンロード</button></div>
+  <div class="row"><button class="primary" id="ghSave">GitHubに保存</button></div>
+  <div class="hint" id="ghmsg"></div>
+  <div class="hint">ダウンロードしたファイルで元のファイルを置き換えてください。続けて登録する場合、今の結果を引き継ぎます。</div>
+  <div class="row"><button id="again">続けて登録する</button></div>
+</section>
+</main>
+
+<script src="gh.js"></script>
+<script>
+/* ===== ロジック ===== */
+let elements=[], data={characters:[]}, rawE=null;
+function setElements(e){rawE=e;elements=e.categories.flatMap(cat=>cat.elements.map(el=>({...el,cat})))}
+function anc(id,o=new Set()){const el=elements.find(x=>x.id===id);(el?.parents||[]).forEach(p=>{if(!o.has(p)){o.add(p);anc(p,o)}});return o}
+const depth=id=>anc(id).size;
+const questionText=el=>(el.question||el.cat.question_template||"{name}ですか?").replaceAll("{name}",el.name);
+// 既存キャラの値: 1/0=登録済み, null=不明, undefined=未登録
+function currentMap(ch){
+  const m={};if(!ch)return m;
+  if(ch.elements){for(const[k,v]of Object.entries(ch.elements))m[k]=(v.confidence===0||v.value<0)?null:v.value}
+  else{elements.forEach(x=>m[x.id]=0);(ch.unknown||[]).forEach(k=>m[k]=null);(ch.has||[]).forEach(k=>m[k]=1)}
+  return m;
+}
+function infer(id,eff){
+  if(elements.some(x=>x.id!==id&&anc(x.id).has(id)&&eff[x.id]===1))return 1;
+  if([...anc(id)].some(p=>eff[p]===0))return 0;
+  return null;
+}
+// --- 共通の質問進行(queue の各項目は id を持つ。skip は項目ごとの省略判定) ---
+function advance(s){let i=s.pos+1;while(i<s.queue.length&&s.skip(s,s.queue[i]))i++;s.pos=i}
+const finished=s=>s.pos>=s.queue.length;
+function answer(s,v){s.answers[s.queue[s.pos].id]=v;s.hist.push(s.pos);advance(s)}
+function back(s){if(!s.hist.length)return;const i=s.hist.pop();delete s.answers[s.queue[i].id];s.pos=i}
+function remaining(s){let n=0;for(let i=s.pos;i<s.queue.length;i++)if(i===s.pos||!s.skip(s,s.queue[i]))n++;return n}
+// --- キャラ登録: キャラ1人について要素を聞く ---
+const eff=s=>({...s.base,...s.answers});
+function makeSession(ch,redo,inferOn){
+  const base=redo?{}:currentMap(ch);
+  const queue=elements.filter(el=>redo||base[el.id]===undefined||base[el.id]===null)
+    .sort((a,b)=>depth(a.id)-depth(b.id)); // 親要素を先に聞く
+  const s={base,queue,answers:{},hist:[],pos:-1,inferOn,
+    skip:(s,el)=>s.answers[el.id]===undefined&&s.inferOn&&infer(el.id,eff(s))!==null};
+  advance(s);return s;
+}
+function finalize(s){
+  const e=eff(s),out={};let auto=0;
+  for(const el of elements){
+    let v=s.answers[el.id]!==undefined?s.answers[el.id]:s.base[el.id];
+    if(v===undefined||v===null){const f=s.inferOn?infer(el.id,e):null;if(f!==null)auto++;v=f}
+    out[el.id]=v===null?{value:-1,confidence:0}:{value:v,confidence:1};
+  }
+  return{out,auto};
+}
+// --- 要素追加: 1つの要素について対象キャラ全員に聞く ---
+const unknownChars=id=>data.characters.filter(c=>{const v=currentMap(c)[id];return v===undefined||v===null});
+const inferFor=(s,c)=>infer(s.el.id,currentMap(c));
+function makeElemSession(el,redo,inferOn,isNewEl){
+  const queue=(isNewEl||redo)?[...data.characters]:unknownChars(el.id);
+  const s={el,queue,answers:{},hist:[],pos:-1,inferOn,
+    skip:(s,c)=>s.answers[c.id]===undefined&&s.inferOn&&inferFor(s,c)!==null};
+  advance(s);return s;
+}
+function applyElem(s){
+  const id=s.el.id,upd={};let auto=0;
+  for(const c of s.queue){
+    let v=s.answers[c.id];
+    if(v===undefined||v===null){const f=s.inferOn?inferFor(s,c):null;if(f!==null)auto++;v=f}
+    const ch=JSON.parse(JSON.stringify(c));
+    if(ch.elements){ // 従来形式
+      ch.elements[id]=v===null?{value:-1,confidence:0}:{value:v,confidence:1};
+      if(v===1&&s.inferOn)for(const p of anc(id)){const e=ch.elements[p];if(!e||e.confidence===0||e.value<0)ch.elements[p]={value:1,confidence:1}}
+    }else{ // 簡易形式(has/unknown)
+      ch.has=(ch.has||[]).filter(k=>k!==id);ch.unknown=(ch.unknown||[]).filter(k=>k!==id);
+      if(v===1)ch.has.push(id);else if(v===null)ch.unknown.push(id);
+    }
+    upd[c.id]=ch;
+  }
+  return{characters:data.characters.map(c=>upd[c.id]||c),auto};
+}
+function addElement(catId,el){rawE.categories.find(c=>c.id===catId).elements.push(el);setElements(rawE)}
+function removeElement(id){rawE.categories.forEach(c=>c.elements=c.elements.filter(x=>x.id!==id));setElements(rawE)}
+const findChar=id=>data.characters.find(c=>c.id===id);
+function findByName(n){n=n.trim();return n&&data.characters.find(c=>c.name===n||(c.aliases||[]).includes(n))}
+
+/* ===== UI ===== */
+const $=id=>document.getElementById(id);
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ID_RE=/^[A-Za-z0-9_-]+$/;
+let S=null,MODE="C",target=null,isNew=true,pendingNew=null,dirtyC=false,dirtyE=false,filledByEx=false;
+const show=n=>["setup","ask","done"].forEach(k=>$(k).classList.toggle("hide",k!==n));
+function setMode(m){MODE=m;$("panelC").classList.toggle("hide",m!=="C");$("panelE").classList.toggle("hide",m!=="E");
+  $("tabC").classList.toggle("on",m==="C");$("tabE").classList.toggle("on",m==="E");refresh()}
+$("tabC").onclick=()=>setMode("C");$("tabE").onclick=()=>setMode("E");
+function lists(){
+  $("ids").innerHTML=data.characters.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
+  $("eids").innerHTML=elements.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("");
+  $("ecat").innerHTML=(rawE?.categories||[]).map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
+}
+function refresh(){
+  let msg="",ok=false;const n=data.characters.length;
+  if(!elements.length)msg="elements.json を選んでください。";
+  else if(MODE==="C"){
+    const id=$("cid").value.trim(),ex=id&&findChar(id);
+    $("cname").disabled=$("calias").disabled=!!ex;
+    msg=`要素 ${elements.length} 件 / 登録済みキャラ ${n} 人。`;
+    if(!id)msg+=" キャラクターIDを入力してください。";
+    else if(!ID_RE.test(id))msg+=" IDは英数字・_・- のみ使えます。";
+    else if(ex){
+      $("cname").value=ex.name;$("calias").value=(ex.aliases||[]).join(", ");
+      const m=currentMap(ex),pend=elements.filter(el=>m[el.id]===undefined||m[el.id]===null).length;
+      msg+=` 【既存】${ex.name}:未回答の要素 ${$("redo").checked?elements.length:pend} 件だけ質問します。`;ok=true;
+    }else{
+      const d=findByName($("cname").value);
+      msg+=` 【新規】全 ${elements.length} 件の要素を質問します。`+(d?` ⚠ 同名/別名のキャラが id「${d.id}」で登録済みです。`:"");
+      ok=!!$("cname").value.trim();if(!ok)msg+=" 名前を入力してください。";
+    }
+  }else{
+    const id=$("eid").value.trim(),ex=id&&elements.find(x=>x.id===id);
+    ["ename","ecat","eparents","eq"].forEach(k=>$(k).disabled=!!ex);
+    msg=`要素 ${elements.length} 件 / キャラ ${n} 人。`;
+    if(ex){
+      $("ename").value=ex.name;$("ecat").value=ex.cat.id;$("eparents").value=(ex.parents||[]).join(", ");$("eq").value=ex.question||"";filledByEx=true;
+      const list=$("redo").checked?data.characters:unknownChars(id);
+      msg+=` 【既存の要素】${ex.name}:`+(list.length?`${$("redo").checked?"全員":"不明の"} ${list.length} 人に質問します(${list.slice(0,6).map(c=>c.name.split("・")[0]).join("、")}${list.length>6?" ほか":""})。`:"不明のキャラはいません。全員に聞き直す場合は下のチェックを入れてください。");
+      ok=list.length>0;
+    }else{
+      if(filledByEx){["ename","eparents","eq"].forEach(k=>$(k).value="");filledByEx=false}
+      const ps=$("eparents").value.split(/[,、]/).map(x=>x.trim()).filter(Boolean),bad=ps.filter(p=>!elements.some(x=>x.id===p));
+      if(!id)msg+=" 要素IDを入力してください(既存IDならその要素を設定します)。";
+      else if(!ID_RE.test(id))msg+=" IDは英数字・_・- のみ使えます。";
+      else if(!$("ename").value.trim())msg+=` 【新規要素】名前を入力してください。`;
+      else if(bad.length)msg+=` ⚠ 存在しない親要素ID: ${bad.join(", ")}`;
+      else{msg+=` 【新規要素】全 ${n} 人に質問します。`;ok=true}
+    }
+    if(!n){msg="characters.json にキャラクターがいません。";ok=false}
+  }
+  $("status").textContent=msg;$("start").disabled=!ok;
+}
+async function load(input,cb){
+  try{cb(JSON.parse(await input.files[0].text()))}catch(e){$("status").textContent="JSONを読み込めませんでした: "+e.message;return}
+  lists();refresh();
+}
+$("fe").onchange=()=>load($("fe"),e=>{if(!Array.isArray(e.categories))throw new Error("categories がありません");setElements(e)});
+$("fc").onchange=()=>load($("fc"),c=>{if(!Array.isArray(c.characters))throw new Error("characters がありません");data=c});
+["cid","cname","eid","ename","eparents","redo"].forEach(k=>$(k).oninput=refresh);$("redo").onchange=refresh;
+
+$("start").onclick=()=>{
+  const inferOn=$("inferOn").checked,redo=$("redo").checked;
+  if(MODE==="C"){
+    const id=$("cid").value.trim();target=findChar(id);isNew=!target;
+    S=makeSession(target,redo,inferOn);$("who").textContent=`キャラ: ${$("cname").value}(${id})`;
+    finished(S)?finish():(show("ask"),render());
+  }else{
+    const id=$("eid").value.trim();let el=elements.find(x=>x.id===id);isNew=!el;
+    if(isNew){
+      const o={id,name:$("ename").value.trim(),parents:$("eparents").value.split(/[,、]/).map(x=>x.trim()).filter(Boolean)};
+      if($("eq").value.trim())o.question=$("eq").value.trim();
+      addElement($("ecat").value,o);pendingNew=id;el=elements.find(x=>x.id===id);
+    }
+    S=makeElemSession(el,redo,inferOn,isNew);$("who").textContent=`要素: ${el.name}(${id})`;
+    finished(S)?finish():(show("ask"),render());
+  }
+};
+function render(){
+  const asked=S.hist.length,total=asked+remaining(S);
+  $("cnt").textContent=`質問 ${asked+1} / ${total}${S.inferOn?"(親子関係で省略される分は除く)":""}`;
+  $("prog").style.width=(asked/total*100)+"%";
+  if(MODE==="C"){const el=S.queue[S.pos];$("catname").textContent=el.cat.name;$("qtext").textContent=questionText(el)}
+  else{const c=S.queue[S.pos];$("catname").textContent=S.el.cat.name;$("qtext").textContent=`【${c.name}】\n${questionText(S.el)}`}
+  $("back").disabled=!S.hist.length;
+}
+const ans=v=>{answer(S,v);finished(S)?finish():render()};
+$("b1").onclick=()=>ans(1);$("b0").onclick=()=>ans(0);$("bu").onclick=()=>ans(null);
+$("back").onclick=()=>{back(S);render()};
+$("abort").onclick=()=>{if(!confirm("入力を破棄して最初に戻りますか?"))return;
+  if(pendingNew){removeElement(pendingNew);pendingNew=null}lists();show("setup");refresh()};
+function finish(){
+  let chipsLabel,chips;
+  if(MODE==="C"){
+    const{out,auto}=finalize(S);
+    const ch=isNew?{id:$("cid").value.trim(),name:$("cname").value.trim(),aliases:$("calias").value.split(/[,、]/).map(x=>x.trim()).filter(Boolean)}:{...target};
+    delete ch.has;delete ch.unknown;ch.elements=out;
+    data={...data,characters:isNew?[...data.characters,ch]:data.characters.map(c=>c.id===ch.id?ch:c)};dirtyC=true;
+    const unk=Object.values(out).filter(v=>v.confidence===0).length;
+    $("summary").textContent=`${ch.name} を${isNew?"新規登録":"更新"}しました。質問 ${S.hist.length} 件 / 親子関係で自動入力 ${auto} 件 / 不明のまま ${unk} 件。`+(S.queue.length===0?"(未回答の要素はありませんでした)":"");
+    chipsLabel="「はい」になった要素:";chips=elements.filter(el=>out[el.id].value===1).map(el=>el.name);
+  }else{
+    const r=applyElem(S);data={...data,characters:r.characters};dirtyC=true;if(isNew)dirtyE=true;pendingNew=null;
+    $("summary").textContent=`要素「${S.el.name}」を${isNew?"追加":"設定"}しました。対象 ${S.queue.length} 人 / 質問 ${S.hist.length} 件 / 親子関係で自動入力 ${r.auto} 件。`;
+    const m=c=>currentMap(c)[S.el.id];
+    chipsLabel="この要素が「はい」のキャラ:";chips=data.characters.filter(c=>m(c)===1).map(c=>c.name);
+  }
+  $("chipsLabel").textContent=chipsLabel;$("chips").innerHTML=chips.map(t=>`<span>${esc(t)}</span>`).join("")||"(なし)";
+  $("dlC").classList.toggle("hide",!dirtyC);$("cp").classList.toggle("hide",!dirtyC);$("dlE").classList.toggle("hide",!dirtyE);
+  lists();show("done");
+}
+const dl=(text,name)=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:"application/json"}));a.download=name;a.click()};
+const dump=o=>JSON.stringify(o,null,2)+"\n";
+GH.ui($("ghslot"),(e,c)=>{setElements(e);data=c;lists();refresh()});
+$("ghSave").onclick=async()=>{
+  const b=$("ghSave");b.disabled=true;$("ghmsg").textContent="保存中…";
+  try{const f=[];if(dirtyE)f.push({name:"elements.json",obj:rawE});if(dirtyC)f.push({name:"characters.json",obj:data});
+    await GH.push(f,"ツールからキャラ・要素を更新");$("ghmsg").textContent="GitHubに保存しました。公開サイトへの反映には1〜2分かかります。"}
+  catch(err){$("ghmsg").textContent="保存に失敗: "+err.message}
+  b.disabled=false};
+$("dlC").onclick=()=>dl(dump(data),"characters.json");
+$("dlE").onclick=()=>dl(dump(rawE),"elements.json");
+$("cp").onclick=()=>navigator.clipboard.writeText(dump(data)).then(()=>{$("cp").textContent="コピーしました"});
+$("again").onclick=()=>{["cid","cname","calias","eid","ename","eparents","eq"].forEach(k=>$(k).value="");$("cp").textContent="コピー";show("setup");refresh()};
+</script>
+</body>
+</html>

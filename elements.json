@@ -1,0 +1,603 @@
+{
+  "categories": [
+    {
+      "id": "basic",
+      "name": "基本情報",
+      "elements": [
+        {
+          "id": "gender_male",
+          "name": "男性",
+          "parents": []
+        },
+        {
+          "id": "gender_female",
+          "name": "女性",
+          "parents": []
+        },
+        {
+          "id": "is_reincarnated",
+          "name": "転生者",
+          "parents": []
+        },
+        {
+          "id": "is_noble",
+          "name": "貴族",
+          "parents": [],
+          "question": "現在、貴族の身分ですか?"
+        },
+        {
+          "id": "was_noble",
+          "name": "元貴族",
+          "parents": [],
+          "question": "以前は貴族でしたが、今は違いますか?"
+        },
+        {
+          "id": "is_combatant",
+          "name": "戦闘員",
+          "parents": [],
+          "question": "戦うことができますか?"
+        },
+        {
+          "id": "is_adventurer",
+          "name": "冒険者",
+          "parents": []
+        },
+        {
+          "id": "is_royal",
+          "name": "王族",
+          "parents": []
+        },
+        {
+          "id": "is_apostle",
+          "name": "ヒトガミの使徒",
+          "parents": []
+        },
+        {
+          "id": "only_name",
+          "name": "名前だけが登場",
+          "parents": [],
+          "question": "作中に名前だけが出てきますか？"
+        },
+        {
+          "id": "born_continent_central",
+          "name": "中央大陸出身",
+          "parents": []
+        },
+        {
+          "id": "born_continent_begaritt",
+          "name": "ベガリット大陸出身",
+          "parents": []
+        },
+        {
+          "id": "born_continent_millis",
+          "name": "ミリス大陸出身",
+          "parents": []
+        },
+        {
+          "id": "born_continent_demon",
+          "name": "魔大陸出身",
+          "parents": []
+        },
+        {
+          "id": "class_knight",
+          "name": "騎士",
+          "parents": [
+            "is_combatant"
+          ]
+        },
+        {
+          "id": "perugius_spirit",
+          "name": "ペルギウスの12精霊",
+          "parents": []
+        },
+        {
+          "id": "born_kingdragonkingdom",
+          "name": "王竜王国出身",
+          "parents": [
+            "born_continent_central"
+          ]
+        },
+        {
+          "id": "born_asura",
+          "name": "アスラ王国出身",
+          "parents": [
+            "born_continent_central"
+          ]
+        },
+        {
+          "id": "born_northen_land",
+          "name": "北方大地出身",
+          "parents": [
+            "born_continent_central"
+          ]
+        },
+        {
+          "id": "born_great_forest",
+          "name": "大森林出身",
+          "parents": [
+            "born_continent_millis"
+          ]
+        }
+      ],
+      "question_template": "{name}ですか?"
+    },
+    {
+      "id": "appearance",
+      "name": "外見",
+      "elements": [
+        {
+          "id": "hair_blonde",
+          "name": "金髪",
+          "parents": []
+        },
+        {
+          "id": "hair_silver",
+          "name": "銀髪",
+          "parents": []
+        },
+        {
+          "id": "hair_red",
+          "name": "赤髪",
+          "parents": []
+        },
+        {
+          "id": "hair_blue",
+          "name": "青髪",
+          "parents": []
+        },
+        {
+          "id": "hair_green",
+          "name": "緑髪",
+          "parents": []
+        },
+        {
+          "id": "hair_brown",
+          "name": "茶髪",
+          "parents": []
+        },
+        {
+          "id": "hair_black",
+          "name": "黒髪",
+          "parents": []
+        },
+        {
+          "id": "hair_white",
+          "name": "白髪",
+          "parents": []
+        },
+        {
+          "id": "hair_purple",
+          "name": "紫髪",
+          "parents": []
+        }
+      ],
+      "question_template": "髪の色は{name}ですか?"
+    },
+    {
+      "id": "race",
+      "name": "種族",
+      "elements": [
+        {
+          "id": "race_human",
+          "name": "人族",
+          "parents": []
+        },
+        {
+          "id": "race_elf",
+          "name": "長耳族",
+          "parents": []
+        },
+        {
+          "id": "race_dwarf",
+          "name": "炭鉱族",
+          "parents": []
+        },
+        {
+          "id": "race_hobbit",
+          "name": "小人族",
+          "parents": []
+        },
+        {
+          "id": "race_ogre",
+          "name": "鬼族",
+          "parents": []
+        },
+        {
+          "id": "race_dragon",
+          "name": "龍族",
+          "parents": []
+        },
+        {
+          "id": "race_heaven",
+          "name": "天族",
+          "parents": []
+        },
+        {
+          "id": "race_ocean",
+          "name": "海族",
+          "parents": []
+        },
+        {
+          "id": "race_demon",
+          "name": "魔族",
+          "parents": []
+        },
+        {
+          "id": "race_beast",
+          "name": "獣族",
+          "parents": []
+        },
+        {
+          "id": "race_migurd",
+          "name": "ミグルド族",
+          "parents": [
+            "race_demon"
+          ]
+        },
+        {
+          "id": "race_superd",
+          "name": "スペルド族",
+          "parents": [
+            "race_demon"
+          ]
+        },
+        {
+          "id": "race_immortal_demon",
+          "name": "不死魔族",
+          "parents": [
+            "race_demon"
+          ]
+        }
+      ],
+      "question_template": "種族は{name}ですか?"
+    },
+    {
+      "id": "ability",
+      "name": "能力",
+      "elements": [
+        {
+          "id": "class_swordsman",
+          "name": "剣士",
+          "parents": [
+            "is_combatant",
+            "sword_user"
+          ]
+        },
+        {
+          "id": "class_magician",
+          "name": "魔術師",
+          "parents": [
+            "is_combatant",
+            "magic_user"
+          ]
+        },
+        {
+          "id": "class_warrier",
+          "name": "戦士",
+          "parents": [
+            "is_combatant"
+          ]
+        },
+        {
+          "id": "class_healer",
+          "name": "治癒術師",
+          "parents": [
+            "is_combatant",
+            "magic_user"
+          ]
+        },
+        {
+          "id": "class_archer",
+          "name": "弓使い",
+          "parents": [
+            "is_combatant"
+          ]
+        },
+        {
+          "id": "rank_beginner",
+          "name": "初級",
+          "parents": [],
+          "rank_order": 1,
+          "question": "初級相当の強さですか?"
+        },
+        {
+          "id": "rank_intermediate",
+          "name": "中級",
+          "parents": [],
+          "rank_order": 2,
+          "question": "中級相当の強さですか?"
+        },
+        {
+          "id": "rank_advanced",
+          "name": "上級",
+          "parents": [],
+          "rank_order": 3,
+          "question": "上級相当の強さですか?"
+        },
+        {
+          "id": "rank_saint",
+          "name": "聖級",
+          "parents": [],
+          "rank_order": 4,
+          "question": "聖級相当の強さですか?"
+        },
+        {
+          "id": "rank_king",
+          "name": "王級",
+          "parents": [],
+          "rank_order": 5,
+          "question": "王級相当の強さですか?"
+        },
+        {
+          "id": "rank_emperor",
+          "name": "帝級",
+          "parents": [],
+          "rank_order": 6,
+          "question": "帝級相当の強さですか?"
+        },
+        {
+          "id": "rank_god",
+          "name": "神級",
+          "parents": [],
+          "rank_order": 7,
+          "question": "神級相当の強さですか?"
+        },
+        {
+          "id": "magic_user",
+          "name": "魔術を使う",
+          "parents": [],
+          "question": "魔術を使えますか?"
+        },
+        {
+          "id": "magic_rank_beginner",
+          "name": "初級魔術師",
+          "parents": [
+            "magic_user",
+            "rank_beginner"
+          ],
+          "question": "扱える魔術の最高ランクが初級ですか?"
+        },
+        {
+          "id": "magic_rank_intermediate",
+          "name": "中級魔術師",
+          "parents": [
+            "magic_user",
+            "rank_intermediate"
+          ],
+          "question": "扱える魔術の最高ランクが中級ですか?"
+        },
+        {
+          "id": "magic_rank_advanced",
+          "name": "上級魔術師",
+          "parents": [
+            "magic_user",
+            "rank_advanced"
+          ],
+          "question": "扱える魔術の最高ランクが上級ですか?"
+        },
+        {
+          "id": "magic_rank_saint",
+          "name": "聖級魔術師",
+          "parents": [
+            "magic_user",
+            "rank_saint"
+          ],
+          "question": "扱える魔術の最高ランクが聖級ですか?"
+        },
+        {
+          "id": "magic_rank_king",
+          "name": "王級魔術師",
+          "parents": [
+            "magic_user",
+            "rank_king"
+          ],
+          "question": "扱える魔術の最高ランクが王級ですか?"
+        },
+        {
+          "id": "magic_rank_emperor",
+          "name": "帝級魔術師",
+          "parents": [
+            "magic_user",
+            "rank_emperor"
+          ],
+          "question": "扱える魔術の最高ランクが帝級ですか?"
+        },
+        {
+          "id": "magic_rank_god",
+          "name": "神級魔術師",
+          "parents": [
+            "magic_user",
+            "rank_god"
+          ],
+          "question": "扱える魔術の最高ランクが神級ですか?"
+        },
+        {
+          "id": "sword_user",
+          "name": "剣を使う",
+          "parents": [],
+          "question": "剣を使いますか?"
+        },
+        {
+          "id": "sword_rank_beginner",
+          "name": "剣神流初級",
+          "parents": [
+            "sword_user",
+            "rank_beginner"
+          ]
+        },
+        {
+          "id": "sword_rank_intermediate",
+          "name": "剣神流中級",
+          "parents": [
+            "sword_user",
+            "rank_intermediate"
+          ]
+        },
+        {
+          "id": "sword_rank_advanced",
+          "name": "剣神流上級",
+          "parents": [
+            "sword_user",
+            "rank_advanced"
+          ]
+        },
+        {
+          "id": "sword_rank_saint",
+          "name": "剣聖",
+          "parents": [
+            "sword_user",
+            "rank_saint"
+          ]
+        },
+        {
+          "id": "sword_rank_king",
+          "name": "剣王",
+          "parents": [
+            "sword_user",
+            "rank_king"
+          ]
+        },
+        {
+          "id": "sword_rank_emperor",
+          "name": "剣帝",
+          "parents": [
+            "sword_user",
+            "rank_emperor"
+          ]
+        },
+        {
+          "id": "sword_rank_god",
+          "name": "剣神",
+          "parents": [
+            "sword_user",
+            "rank_god"
+          ]
+        },
+        {
+          "id": "water_rank_beginner",
+          "name": "水神流初級",
+          "parents": [
+            "sword_user",
+            "rank_beginner"
+          ]
+        },
+        {
+          "id": "water_rank_intermediate",
+          "name": "水神流中級",
+          "parents": [
+            "sword_user",
+            "rank_intermediate"
+          ]
+        },
+        {
+          "id": "water_rank_advanced",
+          "name": "水神流上級",
+          "parents": [
+            "sword_user",
+            "rank_advanced"
+          ]
+        },
+        {
+          "id": "water_rank_saint",
+          "name": "水聖",
+          "parents": [
+            "sword_user",
+            "rank_saint"
+          ]
+        },
+        {
+          "id": "water_rank_king",
+          "name": "水王",
+          "parents": [
+            "sword_user",
+            "rank_king"
+          ]
+        },
+        {
+          "id": "water_rank_emperor",
+          "name": "水帝",
+          "parents": [
+            "sword_user",
+            "rank_emperor"
+          ]
+        },
+        {
+          "id": "water_rank_god",
+          "name": "水神",
+          "parents": [
+            "sword_user",
+            "rank_god"
+          ]
+        },
+        {
+          "id": "north_rank_beginner",
+          "name": "北神流初級",
+          "parents": [
+            "sword_user",
+            "rank_beginner"
+          ]
+        },
+        {
+          "id": "north_rank_intermediate",
+          "name": "北神流中級",
+          "parents": [
+            "sword_user",
+            "rank_intermediate"
+          ]
+        },
+        {
+          "id": "north_rank_advanced",
+          "name": "北神流上級",
+          "parents": [
+            "sword_user",
+            "rank_advanced"
+          ]
+        },
+        {
+          "id": "north_rank_saint",
+          "name": "北聖",
+          "parents": [
+            "sword_user",
+            "rank_saint"
+          ]
+        },
+        {
+          "id": "north_rank_king",
+          "name": "北王",
+          "parents": [
+            "sword_user",
+            "rank_king"
+          ]
+        },
+        {
+          "id": "north_rank_emperor",
+          "name": "北帝",
+          "parents": [
+            "sword_user",
+            "rank_emperor"
+          ]
+        },
+        {
+          "id": "north_rank_god",
+          "name": "北神",
+          "parents": [
+            "sword_user",
+            "rank_god"
+          ]
+        },
+        {
+          "id": "has_demon_eye",
+          "name": "魔眼を持つ",
+          "parents": [],
+          "question": "魔眼を持っていますか?"
+        },
+        {
+          "id": "ability_unknown",
+          "name": "能力が不明",
+          "parents": []
+        }
+      ],
+      "question_template": "{name}ですか?"
+    }
+  ]
+}
